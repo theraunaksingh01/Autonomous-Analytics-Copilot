@@ -6,7 +6,11 @@
 ───────────────────────────────────────────────────────────── */
 import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Plot from 'react-plotly.js'
+import dynamic from 'next/dynamic'
+
+const Plot = dynamic(() => import('react-plotly.js'), {
+  ssr: false,
+})
 
 /* ── Colour tokens (hardcoded so they always render) ─────── */
 const T = {
@@ -110,6 +114,7 @@ function colType(vals: string[]): 'number' | 'text' | 'date' {
   return 'text'
 }
 
+
 /* ═══════════════════════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════ */
@@ -123,6 +128,8 @@ export default function Upload() {
   const [visRows, setVisRows] = useState(10)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const [datasetInsights, setDatasetInsights] = useState<any>(null)
+
 
   /* ── Process a File object ─── */
   const processFile = useCallback(async (file: File) => {
@@ -164,6 +171,8 @@ export default function Upload() {
       if (!res.ok) throw new Error('Upload failed')
 
       const data = await res.json()
+
+      setDatasetInsights(data.insights)
 
       setFiles(prev =>
         prev.map(f =>
@@ -549,6 +558,87 @@ export default function Upload() {
                         </div>
                       </motion.div>
                     ))}
+                  </div>
+                )}
+
+                {datasetInsights && (
+                  <div
+                    style={{
+                      marginTop: '20px',
+                      background: '#FAFAFA',
+                      border: `1px solid ${T.lightBorder}`,
+                      borderRadius: '12px',
+                      padding: '18px'
+                    }}
+                  >
+                    <p style={{
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      color: T.mutedDark,
+                      marginBottom: '10px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      ✦ AI Dataset Overview
+                    </p>
+
+                    {datasetInsights.executive_summary && (
+                      <div style={{
+                        marginTop: '14px',
+                        padding: '12px',
+                        background: '#111',
+                        color: '#E0E0E0',
+                        borderRadius: '10px',
+                        fontSize: '13px',
+                        lineHeight: 1.6
+                      }}>
+                        <strong style={{ color: '#00FFB3' }}>Executive Summary:</strong>
+                        <p style={{ marginTop: '6px' }}>
+                          {datasetInsights.executive_summary}
+                        </p>
+                      </div>
+                    )}
+
+                    <p style={{
+                      fontSize: '13px',
+                      marginBottom: '10px',
+                      fontFamily: "'DM Sans',sans-serif"
+                    }}>
+                      {datasetInsights?.overview?.rows} rows · {datasetInsights?.overview?.columns} columns
+                    </p>
+
+                    {datasetInsights?.key_findings?.map((f: string, i: number) => (
+                      <div key={i}
+                        style={{
+                          fontSize: '13px',
+                          marginBottom: '4px',
+                          fontFamily: "'DM Sans',sans-serif"
+                        }}
+                      >
+                        • {f}
+                      </div>
+                    ))}
+
+                    <div style={{ marginTop: '12px' }}>
+                      <strong style={{ fontSize: '13px' }}>
+                        Suggested Questions:
+                      </strong>
+
+                      {datasetInsights?.suggested_questions?.map((q: string, i: number) => (
+                        <div
+                          key={i}
+                          style={{
+                            cursor: 'pointer',
+                            color: T.accent,
+                            marginTop: '4px',
+                            fontSize: '13px'
+                          }}
+                          onClick={() => setQuery(q)}
+                        >
+                          → {q}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 

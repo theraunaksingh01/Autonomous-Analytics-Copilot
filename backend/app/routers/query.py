@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.database import get_db
 from app.models.file import UploadedFile
-from app.services.query_engine import run_query
+from app.services.agent import run_agent
 
 router = APIRouter()
 
@@ -19,6 +19,6 @@ def query_dataset(file_id: int, request: QueryRequest, db: Session = Depends(get
     if not db_file:
         raise HTTPException(status_code=404, detail="File not found")
 
-    result = run_query(db_file.filepath, request.question)
+    result = run_agent(db_file.filepath, request.question)
 
     return result
