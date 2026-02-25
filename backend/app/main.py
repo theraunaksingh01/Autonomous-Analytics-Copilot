@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.models.file import UploadedFile
+from app.models import UploadedFile, AnalysisLog
 from app.routers import upload
 from app.routers import profile
 from dotenv import load_dotenv

@@ -1,18 +1,23 @@
 import pandas as pd
 
-
-def execute_code(df, code: str):
+def execute_code(df, code):
     local_vars = {"df": df}
 
-    exec(code, {}, local_vars)
+    try:
+        exec(code, {}, local_vars)
+        result = local_vars.get("result", None)
 
-    result = local_vars.get("result", None)
+        # Convert pandas objects to safe types
+        if isinstance(result, pd.Series):
+            return result.to_dict()
 
-    # Convert Pandas objects safely
-    if isinstance(result, pd.DataFrame):
-        return result.to_dict(orient="records")
+        if isinstance(result, pd.DataFrame):
+            return result.head(50).to_dict(orient="records")
 
-    if isinstance(result, pd.Series):
-        return result.to_dict()
+        return result
 
-    return result
+    except KeyError as e:
+        return f"Column not found: {str(e)}. Available columns: {list(df.columns)}"
+
+    except Exception as e:
+        return f"Execution error: {str(e)}"

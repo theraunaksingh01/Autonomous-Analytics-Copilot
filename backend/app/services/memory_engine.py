@@ -1,18 +1,28 @@
-_memory_store = []
+from app.models import AnalysisLog
+from sqlalchemy.orm import Session
 
 
-def get_memory():
-    """
-    Returns last 3 Q&A pairs.
-    """
-    return _memory_store[-3:]
+def build_memory_context(db: Session, file_id: int, limit: int = 5):
+    logs = (
+        db.query(AnalysisLog)
+        .filter(AnalysisLog.file_id == file_id)
+        .order_by(AnalysisLog.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    if not logs:
+        return ""
+
+    context = []
+    for log in reversed(logs):
+        context.append(f"User: {log.question}")
+        context.append(f"Agent: {log.answer}")
+
+    return "\n".join(context)
 
 
-def update_memory(question: str, result):
-    """
-    Stores recent interaction.
-    """
-    _memory_store.append({
-        "question": question,
-        "result": str(result)
-    })
+def update_memory(db: Session, file_id: int, question: str, answer: str):
+    # Memory already stored in AnalysisLog via query router.
+    # This function exists for extensibility (vector memory later).
+    return

@@ -25,7 +25,7 @@ async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db
 
     db_file = UploadedFile(
         filename=file.filename,
-        filepath=file_location,
+        file_location=file_location,
         filesize=len(content)
     )
 

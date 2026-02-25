@@ -31,7 +31,7 @@ Rate confidence from 0 to 100 based on:
 - completeness
 - statistical reliability
 
-Return ONLY a number.
+Return ONLY a number between 0 and 100.
 """
 
     user_prompt = f"""

@@ -129,6 +129,7 @@ export default function Upload() {
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const [datasetInsights, setDatasetInsights] = useState<any>(null)
+  const [history, setHistory] = useState<any[]>([])
 
 
   /* ── Process a File object ─── */
@@ -235,6 +236,12 @@ export default function Upload() {
 
       const data = await res.json()
 
+      const historyRes = await fetch(
+        `http://localhost:8000/query/history/${activeFile.id}`
+      )
+      const historyData = await historyRes.json()
+      setHistory(historyData)
+
       setResults(prev =>
         prev.map((r, i) =>
           i === 0
@@ -271,6 +278,75 @@ export default function Upload() {
   const uploadingCount = files.filter(f => f.status === 'uploading').length
   // Extracted so TypeScript knows it's non-null inside the preview panel
   const previewData: BackendProfile | null = activeFile?.data ?? null
+
+  const renderAnswer = (answer: any) => {
+    let parsed = answer
+
+    // Try parsing if it's a stringified JSON
+    if (typeof answer === "string") {
+      try {
+        parsed = JSON.parse(answer)
+      } catch {
+        parsed = answer
+      }
+    }
+
+    // If it's array of objects → render table
+    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
+      return (
+        <table style={{ borderCollapse: "collapse", marginTop: "10px" }}>
+          <thead>
+            <tr>
+              {Object.keys(parsed[0]).map((key) => (
+                <th key={key} style={{ border: "1px solid #ccc", padding: "6px" }}>
+                  {key}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {parsed.map((row: any, i: number) => (
+              <tr key={i}>
+                {Object.values(row).map((val: any, j: number) => (
+                  <td key={j} style={{ border: "1px solid #ccc", padding: "6px" }}>
+                    {String(val)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+
+    // If it's a single object → render key/value table
+    if (typeof parsed === "object" && parsed !== null) {
+      return (
+        <table style={{ borderCollapse: "collapse", marginTop: "10px" }}>
+          <tbody>
+            {Object.entries(parsed).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ border: "1px solid #ccc", padding: "6px", fontWeight: 600 }}>
+                  {key}
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "6px" }}>
+                  {String(value)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+
+    // If it's an array of primitives
+    if (Array.isArray(parsed)) {
+      return <pre>{JSON.stringify(parsed, null, 2)}</pre>
+    }
+
+    // Fallback
+    return <div>{String(parsed)}</div>
+  }
 
   /* ══════════════════════════════════════════════════════════
      RENDER
@@ -607,6 +683,19 @@ export default function Upload() {
                       {datasetInsights?.overview?.rows} rows · {datasetInsights?.overview?.columns} columns
                     </p>
 
+                    {datasetInsights?.health_score && (
+                      <div style={{
+                        background: '#111',
+                        color: '#00FFB3',
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        marginBottom: '12px'
+                      }}>
+                        Data Health Score: {datasetInsights.health_score}/100
+                      </div>
+                    )}
+
                     {datasetInsights?.key_findings?.map((f: string, i: number) => (
                       <div key={i}
                         style={{
@@ -638,6 +727,22 @@ export default function Upload() {
                           → {q}
                         </div>
                       ))}
+                      <button
+                        onClick={() => {
+                          window.open(`http://localhost:8000/query/report/${activeFile?.id}`)
+                        }}
+                        style={{
+                          marginTop: 20,
+                          padding: "10px 20px",
+                          borderRadius: 12,
+                          background: "#6366f1",
+                          color: "white",
+                          border: "none",
+                          cursor: "pointer"
+                        }}
+                      >
+                        Download AI Report
+                      </button>
                     </div>
                   </div>
                 )}
@@ -704,7 +809,7 @@ export default function Upload() {
                                   </div>
                                 ) : (
                                   <>
-                                    <p
+                                    <div
                                       style={{
                                         fontSize: '13px',
                                         color: T.bodyDark,
@@ -712,8 +817,8 @@ export default function Upload() {
                                         lineHeight: 1.7
                                       }}
                                     >
-                                      {r.answer}
-                                    </p>
+                                      {renderAnswer(r.answer)}
+                                    </div>
 
                                     {r.plot && (
                                       <div style={{ marginTop: '12px' }}>
@@ -754,6 +859,31 @@ export default function Upload() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {history.length > 0 && (
+          <div style={{ marginTop: 40 }}>
+            <h3 style={{ marginBottom: 15 }}>Analysis History</h3>
+
+            {history.map((h, i) => (
+              <div
+                key={i}
+                style={{
+                  padding: 12,
+                  marginBottom: 12,
+                  background: "#f5f5f5",
+                  borderRadius: 8
+                }}
+              >
+                <strong>{h.question}</strong>
+                <div style={{ marginTop: 6 }}>{renderAnswer(h.answer)}</div>
+                <small>
+                  Confidence: {Math.round((h.confidence || 0) * 100)}% ·
+                  Latency: {h.latency?.toFixed(2)}s
+                </small>
+              </div>
+            ))}
+          </div>
+        )}
 
       </div>
     </section>
