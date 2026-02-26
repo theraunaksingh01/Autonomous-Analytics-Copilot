@@ -5,11 +5,12 @@ from pydantic import BaseModel
 
 from app.database import get_db
 from app.models import UploadedFile, AnalysisLog
-from app.services.agent import run_agent
+from app.services.orchestrator import Orchestrator
 from app.services.insight_engine import generate_dataset_insights
 from app.services.report_engine import generate_pdf_report
 
 import json
+
 
 router = APIRouter(prefix="/query", tags=["Query"])
 
@@ -29,11 +30,12 @@ def query_dataset(file_id: int, request: QueryRequest, db: Session = Depends(get
     if not db_file:
         raise HTTPException(status_code=404, detail="File not found")
 
-    result = run_agent(
-        db_file.file_location,
-        request.question,
-        db,
-        file_id
+    orchestrator = Orchestrator(db)
+
+    result = orchestrator.run(
+        file_path=db_file.file_location,
+        question=request.question,
+        file_id=file_id
     )
     
     raw_answer = result.get("answer")
