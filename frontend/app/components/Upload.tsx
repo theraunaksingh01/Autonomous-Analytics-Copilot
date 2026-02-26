@@ -352,7 +352,7 @@ export default function Upload() {
      RENDER
   ══════════════════════════════════════════════════════════ */
   return (
-    <section id="upload" style={{ padding: '100px 24px', background: T.bg, position: 'relative' }}>
+    <section id="upload" style={{ padding: '100px 24px', background: '#FFFFFF', position: 'relative' }}>
 
       {/* Subtle glow */}
       <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '350px', background: 'radial-gradient(ellipse, rgba(255,107,53,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -365,7 +365,7 @@ export default function Upload() {
           <div style={{ display: 'inline-block', background: 'rgba(255,107,53,0.12)', border: '1px solid rgba(255,107,53,0.28)', padding: '5px 14px', borderRadius: '100px', marginBottom: '16px' }}>
             <span style={{ fontSize: '11px', color: T.accent, fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: "'DM Sans',sans-serif" }}>Try It Now</span>
           </div>
-          <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 'clamp(28px,4vw,44px)', fontWeight: '800', letterSpacing: '-1.5px', color: '#F0F4FF', lineHeight: 1.1, marginBottom: '12px' }}>
+          <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 'clamp(28px,4vw,44px)', fontWeight: '800', letterSpacing: '-1.5px', color: '#000000', lineHeight: 1.1, marginBottom: '12px' }}>
             Upload your data &amp; ask anything
           </h2>
           <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '15px', color: '#8892A4', fontWeight: '300', lineHeight: 1.7 }}>
