@@ -352,7 +352,7 @@ export default function Upload() {
      RENDER
   ══════════════════════════════════════════════════════════ */
   return (
-    <section id="upload" style={{ padding: '100px 24px', background: '#FFFFFF', position: 'relative' }}>
+    <section id="upload" style={{ padding: '100px 24px', background: 'rgba(255, 255, 255, 0.12)', position: 'relative' }}>
 
       {/* Subtle glow */}
       <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '350px', background: 'radial-gradient(ellipse, rgba(255,107,53,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
